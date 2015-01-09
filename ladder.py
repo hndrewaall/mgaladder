@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import unittest
+import yaml
 from datetime import datetime, timezone
 
 
@@ -61,7 +62,10 @@ class Rank(object):
         return rank_str
 
     def __eq__(self, other):
-        return self.value == other.value
+        return type(other) is type(self) and self.value == other.value
+
+    def __ne__(self, other):
+        return type(other) is not type(self) or self.value != other.value
 
     def __hash__(self):
         return self.value
@@ -149,6 +153,9 @@ class Ladder(object):
             self.standings.remove(result.black)
             self.standings.insert(self.standings.index(result.white), result.black)
         self.results.append(result)
+
+    def write_to_yaml(self, stream):
+        yaml.dump(self, stream)
 
 
 class RankTestCase(unittest.TestCase):
@@ -244,6 +251,10 @@ class LadderTestCase(unittest.TestCase):
         self.ladder.submit_result(result_one)
         new_standings = [1, 0, 2, 3, 4]
         self.assertEqual(self.ladder.standings, new_standings)
+
+    def test_yaml(self):
+        with open('unittest.yaml', 'w+') as stream:
+            self.ladder.write_to_yaml(stream)
 
 if __name__ == '__main__':
     unittest.main()
